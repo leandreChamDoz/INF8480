@@ -26,7 +26,6 @@ resources:
   server:
     type: OS::Nova::Server
     properties:
-      name: {get_param: name}
       flavor: {get_param: flavor}
       key_name: {get_param: key_name}
       image: {get_param: image}
