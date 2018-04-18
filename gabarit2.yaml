@@ -65,8 +65,8 @@ resources:
                                 #!/bin/bash
                                 wget "https://raw.githubusercontent.com/houssemmh/INF4410-TP3/master/server.py"
                                 python server.py
-                        params:
-                            db_port: { get_param: db_port }
+                            params:
+                                db_port: { get_param: db_port }
 
     mypool:
         type: OS::Neutron::Pool
