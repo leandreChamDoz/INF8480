@@ -45,9 +45,6 @@ parameters:
         type: string
         description: Network used by the server
 
-    metadata:
-        type: json
-
 resources:
     server_nodes:
         type: OS::Heat::ResourceGroup
