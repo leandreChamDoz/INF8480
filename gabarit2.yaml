@@ -45,13 +45,16 @@ parameters:
         type: string
         description: Network used by the server
 
+    metadata:
+        type: json
+
 resources:
     server_nodes:
         type: OS::Heat::ResourceGroup
         properties:
             count: 2
             resource_def:
-                type: https://github.com/openstack/heat-templates/blob/master/hot/lb_server.yaml
+                type: https://github.com/leandreChamDoz/INF8480/lb_server.yaml
                 properties:
                     image: { get_param: image }
                     flavor: { get_param: flavor }
