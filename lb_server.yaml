@@ -22,6 +22,8 @@ parameters:
   network:
     type: string
     description: Network used by the server
+  metadata:
+    type: json
 
 resources:
   server:
@@ -29,7 +31,7 @@ resources:
     properties:
       name: {get_param: name}
       flavor: {get_param: flavor}
-      key_name: {get_param: key}
+      key_name: {get_param: key_name}
       image: {get_param: image}
       metadata: {get_param: metadata}
       user_data: {get_param: user_data}
