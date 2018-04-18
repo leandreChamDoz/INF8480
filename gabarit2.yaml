@@ -1,0 +1,106 @@
+heat_template_version: 2014-10-16
+
+description: A template to deploy a load balanced web server
+
+parameters:
+
+    image:
+        type: string
+        description: Image utilisee pour les serveurs
+        default: INF4410-Ubuntu-trusty-mini
+        constraints:
+          - custom_constraint: glance.image
+
+    key_name:
+        type: string
+        description: Name of an existing key pair to use for the server
+        default: keys1
+        constraints:
+          - custom_constraint: nova.keypair
+
+    flavor:
+        type: string
+        description: Flavor utilisee par les serveurs
+        default: INF4410-mini
+        constraints:
+          - custom_constraint: nova.flavor
+
+    db_port:
+        type: number
+        description: Database port number
+        default: 50000
+        constraints:
+          - range: { min: 40000, max: 60000 }
+            description: Port number must be between 40000 and 60000
+
+    subnet_id:
+        type: string
+        description: Sous-reseau dans lequel le load balancer sera situe
+
+    external_network_id:
+        type: string
+        description: Identifiant du réseau externe
+
+    network:
+        type: string
+        description: Network used by the server
+
+resources:
+    server_nodes:
+        type: OS::Heat::ResourceGroup
+        properties:
+            count: 2
+            resource_def:
+                type: https://github.com/openstack/heat-templates/blob/master/hot/lb_server.yaml
+                properties:
+                    image: { get_param: image }
+                    flavor: { get_param: flavor }
+                    key_name: {get_param: key_name}
+                    network: { get_param: network }
+                    subnet: { get_param: network }
+                    pool_id: { get_resource: mypool }
+                    metadata: {"metering.stack": {get_param: "OS::stack_id"}}
+                    user_data:
+                        str_replace:
+                            template: |
+                                #!/bin/bash
+                                wget "https://raw.githubusercontent.com/houssemmh/INF4410-TP3/master/server.py"
+                                python server.py
+                        params:
+                            db_port: { get_param: db_port }
+
+    mypool:
+        type: OS::Neutron::Pool
+        properties:
+            protocol: HTTP
+            monitors: [{get_resource: monitor}]
+            subnet_id: {get_param: subnet_id}
+            lb_method: ROUND_ROBIN
+            vip:
+                protocol_port: 8000
+
+    loadbalancer:
+        type: OS::Neutron::LoadBalancer
+        properties:
+            protocol_port: 8000
+            pool_id: {get_resource: mypool}
+
+    monitor:
+        type: OS::Neutron::HealthMonitor
+        properties:
+            type: TCP
+            delay: 4
+            max_retries: 1
+            timeout: 10
+
+    ip_float:
+        type: OS::Neutron::FloatingIP
+        properties:
+            floating_network_id: {get_param: external_network_id}
+            port_id: {get_attr: [mypool, vip, port_id]}
+
+
+outputs:
+    pool_ip_address:
+        value: {get_attr: [mypool, vip, address]}
+        description: The IP address of the load balancing pool

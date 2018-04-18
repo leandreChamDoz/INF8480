@@ -1,0 +1,81 @@
+#
+# This is a hello world HOT template just defining a single compute
+# server.
+#
+heat_template_version: 2013-05-23
+
+description: >
+  Hello world HOT template that just defines a single server.
+  Contains just base features to verify base HOT support.
+
+parameters:
+  key_name:
+    type: string
+    description: Name of an existing key pair to use for the server
+    default: keys1
+    constraints:
+      - custom_constraint: nova.keypair
+  flavor:
+    type: string
+    description: Flavor for the server to be created
+    default: INF4410-mini
+    constraints:
+      - custom_constraint: nova.flavor
+  image:
+    type: string
+    description: Image ID or image name to use for the server
+    default: INF4410-Ubuntu-trusty-mini
+    constraints:
+      - custom_constraint: glance.image
+  db_port:
+    type: number
+    description: Database port number
+    default: 50000
+    constraints:
+      - range: { min: 40000, max: 60000 }
+        description: Port number must be between 40000 and 60000
+
+  server_network_name:
+    type: string
+    description: name of th enetwork that will contain the nova server
+    default: inf4410-net
+
+  external_network_id:
+    type: string
+    description: UUID of a Neutron external network
+
+
+resources:
+  server:
+    type: OS::Nova::Server
+    properties:
+      networks:
+        - network: { get_param: server_network_name }
+      key_name: { get_param: key_name }
+      image: { get_param: image }
+      flavor: { get_param: flavor }
+      user_data_format: RAW
+      user_data:
+        str_replace:
+          template: |
+            #!/bin/bash
+            wget "https://raw.githubusercontent.com/houssemmh/INF4410-TP3/master/server.py"
+            python server.py
+          params:
+            db_port: { get_param: db_port }
+
+  server_floating_ip_assoc:
+    type: OS::Nova::FloatingIPAssociation
+    properties:
+      floating_ip: {get_resource: ip_float}
+      server_id: {get_resource: server}
+
+  ip_float:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network_id: {get_param: external_network_id}
+
+outputs:
+  server_networks:
+    description: The networks of the deployed server
+    value: { get_attr: [server, networks] }

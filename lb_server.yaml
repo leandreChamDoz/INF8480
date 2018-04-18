@@ -1,0 +1,53 @@
+heat_template_version: 2016-10-14
+description: A load-balancer server
+parameters:
+  image:
+    type: string
+    description: Image used for servers
+  flavor:
+    type: string
+    description: flavor used by the servers
+  name:
+    type: string
+    description: Name of server
+  key_name:
+    type: string
+    description: SSH key to connect to the servers
+  pool_id:
+    type: string
+    description: Pool to contact
+  user_data:
+    type: string
+    description: Server user_data
+  network:
+    type: string
+    description: Network used by the server
+
+resources:
+  server:
+    type: OS::Nova::Server
+    properties:
+      name: {get_param: name}
+      flavor: {get_param: flavor}
+      key_name: {get_param: key}
+      image: {get_param: image}
+      metadata: {get_param: metadata}
+      user_data: {get_param: user_data}
+      user_data_format: RAW
+      networks: [{network: {get_param: network} }]
+
+  member:
+    type: OS::Neutron::LBaaS::PoolMember
+    properties:
+      pool: {get_param: pool_id}
+      address: {get_attr: [server, first_address]}
+      protocol_port: 8000
+      subnet: {get_param: network}
+
+outputs:
+  server_ip:
+    description: IP Address of the load-balanced server.
+    value: { get_attr: [server, first_address] }
+  lb_member:
+    description: LB member details.
+    value: { get_attr: [member, show] }
