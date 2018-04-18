@@ -1,0 +1,2 @@
+sans répartiteur pour 30 requests: 10259ms
+avec répartiteur pour 30 requests: 6015ms
