@@ -69,7 +69,7 @@ resources:
       min_size: 1
       max_size: 3
       resource:
-        type: https://github.com/openstack/heat-templates/blob/master/hot/lb_server.yaml
+        type: https://github.com/leandreChamDoz/INF8480/blob/master/lb_server.yaml
         properties:
           flavor: {get_param: flavor}
           image: {get_param: image}
