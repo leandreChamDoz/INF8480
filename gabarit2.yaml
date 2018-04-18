@@ -57,7 +57,6 @@ resources:
                     flavor: { get_param: flavor }
                     key_name: {get_param: key_name}
                     network: { get_param: network }
-                    subnet: { get_param: network }
                     pool_id: { get_resource: mypool }
                     metadata: {"metering.stack": {get_param: "OS::stack_id"}}
                     user_data:

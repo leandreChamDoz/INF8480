@@ -7,9 +7,6 @@ parameters:
   flavor:
     type: string
     description: flavor used by the servers
-  name:
-    type: string
-    description: Name of server
   key_name:
     type: string
     description: SSH key to connect to the servers
